@@ -1,0 +1,21 @@
+{
+  "name": "snipsmart-server",
+  "version": "1.0.0",
+  "description": "A lightweight Node.js HTTP server that exposes the snipSmart JavaScript utility as a REST API.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "api",
+    "snipsmart",
+    "express"
+  ],
+  "author": "Gemini",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}

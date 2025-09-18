@@ -1,0 +1,45 @@
+# Firebase
+firebase/serviceAccountKey.json
+.firebase/
+
+# Gemini CLI
+.gemini/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+env/
+venv/
+*.log
+*.sqlite3
+*.sqlite3-journal
+.pytest_cache/
+.coverage
+.cache
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+cython_debug/
+
+# FastMCP + Gemini CLI
+logs/
+*.manifest
+*.spec
+
+# VS Code
+.vscode/
+.vscode-test/
+
+# Node (if using frontend)
+node_modules/
+*.log
+.cache/
+.parcel-cache/
