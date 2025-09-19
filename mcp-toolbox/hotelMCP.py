@@ -3,8 +3,6 @@ import logging
 import os
 import json
 from typing import List, Dict, Any
-import firebase_admin
-from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 import google.generativeai as genai
 from fastmcp import FastMCP
@@ -20,15 +18,6 @@ logging.basicConfig(format="[%(levelname)s]: %(message)s", level=logging.INFO)
 # Initialize FastMCP
 mcp = FastMCP("Hotel MCP Server 🏨")
 
-def initialize_firebase():
-    """Initializes the Firebase Admin SDK, preventing re-initialization."""
-    if not firebase_admin._apps:
-        cred_path = os.path.join(os.path.dirname(__file__), '../firebase/serviceAccountKey.json')
-        if not os.path.exists(cred_path):
-            raise FileNotFoundError(f"Firebase service account key not found at {cred_path}")
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
-        logger.info("Firebase initialized successfully.")
 
 def configure_gemini():
     """Configures the Gemini API with the key from environment variables."""
@@ -39,34 +28,22 @@ def configure_gemini():
     logger.info("Gemini API configured successfully.")
 
 @mcp.tool()
-def find_hotels(uid: str) -> Dict[str, Any]:
+def find_hotels( trip_details: dict) -> Dict[str, Any]:
     """
-    Finds and enriches hotel listings based on user's trip details from Firestore.
+    Finds and enriches hotel listings based on user's trip details.
 
     Args:
-        uid: The user ID to fetch trip details from Firestore.
+        uid: The user ID to fetch trip details.
         guests: The number of guests.
 
     Returns:
         A dictionary containing enriched hotel data or a fallback mock response.
     """
-    logger.info(f"Tool 'find_hotels' called for UID: '{uid}' ")
+    logger.info(f"Tool 'find_hotels' called' ")
 
     try:
-        initialize_firebase()
         configure_gemini()
-        db = firestore.client()
-
-        # Fetch trip details from 'trips' collection
-        trip_ref = db.collection('trips').document(uid)
-        trip_doc = trip_ref.get()
-
-        if not trip_doc.exists:
-            logger.error(f"No trip found for UID: {uid}")
-            return {"error": f"No trip found for user ID: {uid}"}
-
-        trip_details = trip_doc.to_dict()
-        
+      
         # Extract relevant information from trip details
         location = trip_details.get('destination', {}).get('name', 'Unknown')
         guests = trip_details.get('guests', 1)

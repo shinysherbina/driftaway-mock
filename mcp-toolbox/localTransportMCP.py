@@ -1,7 +1,5 @@
 import os
 import json
-import firebase_admin
-from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import google.generativeai as genai
@@ -25,27 +23,6 @@ def configure_gemini():
         raise ValueError("GEMINI_API_KEY not found in environment variables.")
     genai.configure(api_key=api_key)
 
-def initialize_firebase():
-    """Initializes the Firebase Admin SDK using service account key."""
-    if not firebase_admin._apps:
-        cred_path = os.path.join(os.path.dirname(__file__), '../firebase/serviceAccountKey.json')
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
-
-def get_trip_details(uid):
-    """Fetches trip details from Firestore for a given user ID."""
-    db = firestore.client()
-    try:
-        trip_ref = db.collection('trips').document(uid)
-        trip_doc = trip_ref.get()
-        if trip_doc.exists:
-            return trip_doc.to_dict()
-        else:
-            logger.warning(f"No trip found for UID: {uid}")
-            return None
-    except Exception as e:
-        logger.error(f"Error fetching trip details from Firestore: {e}")
-        return None
 
 def get_local_transport_from_gemini(destination, start_date, duration_days):
     """Calls the Gemini API to get local transport options for sightseeing."""
@@ -141,29 +118,34 @@ def get_mock_local_transport_options(destination, duration_days):
         ]
     }
 
+def parse_date(date_str):
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d")
+    except Exception:
+        return datetime.now()
+
+
 @mcp.tool()
-def get_local_transport_options(uid: str) -> dict:
+def get_local_transport_options( trip_details: dict) -> dict:
     """
     Main function to get local transport options, wrapped as a fastmcp tool.
     """
     try:
-        logger.info(f"Received request for local transport options with uid={uid}")
+        logger.info(f"Received request for local transport options")
 
-        initialize_firebase()
         configure_gemini()
 
-        trip_details = get_trip_details(uid)
         if not trip_details:
             destination = "Goa"
             start_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
             duration_days = 5
         else:
             destination = trip_details.get('destination', {}).get('name', 'Unknown')
-            start_date_obj = trip_details.get('startDate')
-            end_date_obj = trip_details.get('endDate')
+            start_date = trip_details.get('startDate')
+            end_date = trip_details.get('endDate')
 
-            start_date = start_date_obj.strftime('%Y-%m-%d') if start_date_obj else datetime.now().strftime('%Y-%m-%d')
-            end_date = end_date_obj.strftime('%Y-%m-%d') if end_date_obj else (datetime.now() + timedelta(days=5)).strftime('%Y-%m-%d')
+            start_date_obj = parse_date(start_date) if start_date else None
+            end_date_obj = parse_date(end_date) if end_date else None
             
             # Calculate duration in days
             if start_date_obj and end_date_obj:

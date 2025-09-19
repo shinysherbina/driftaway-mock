@@ -3,8 +3,6 @@ import logging
 import os
 import json
 from typing import Dict, Any
-import firebase_admin
-from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 import google.generativeai as genai
 from fastmcp import FastMCP
@@ -21,16 +19,6 @@ logging.basicConfig(format="[%(levelname)s]: %(message)s", level=logging.INFO)
 # Initialize FastMCP
 mcp = FastMCP("Activities MCP Server 🎭")
 
-def initialize_firebase():
-    """Initializes the Firebase Admin SDK, preventing re-initialization."""
-    if not firebase_admin._apps:
-        cred_path = os.path.join(os.path.dirname(__file__), '../firebase/serviceAccountKey.json')
-        if not os.path.exists(cred_path):
-            raise FileNotFoundError(f"Firebase service account key not found at {cred_path}")
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
-        logger.info("Firebase initialized successfully.")
-
 def configure_gemini():
     """Configures the Gemini API with the key from environment variables."""
     api_key = os.getenv("GEMINI_API_KEY")
@@ -39,45 +27,45 @@ def configure_gemini():
     genai.configure(api_key=api_key)
     logger.info("Gemini API configured successfully.")
 
+def parse_date(date_str):
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d")
+    except Exception:
+        return datetime.now()
+
 @mcp.tool()
-def get_activity_itinerary(uid: str) -> Dict[str, Any]:
+def get_activity_itinerary( trip_details: dict) -> Dict[str, Any]:
     """
     Generates a personalized activity itinerary for a user's trip.
 
     Args:
-        uid: The user ID to fetch trip details from Firestore.
+       trip_details : Trip details needed to generate activities itinerary.
 
     Returns:
         A dictionary containing the activity itinerary.
     """
-    logger.info(f">>> 🛠️ Tool: 'get_activity_itinerary' called for UID '{uid}'")
+    logger.info(f">>> 🛠️ Tool: 'get_activity_itinerary' called ")
 
     try:
-        initialize_firebase()
         configure_gemini()
-        db = firestore.client()
 
-        trip_ref = db.collection('trips').document(uid)
-        trip_doc = trip_ref.get()
-
-        if not trip_doc.exists:
-            logger.error(f"No trip found for UID: {uid}")
-            return {"error": f"No trip found for user ID: {uid}"}
-
-        trip_details = trip_doc.to_dict()
-        
         destination = trip_details.get('destination', {}).get('name', 'Unknown')
-        start_date_obj = trip_details.get('startDate')
-        end_date_obj = trip_details.get('endDate')
+        start_date = trip_details.get('startDate')
+        end_date = trip_details.get('endDate')
         budget = trip_details.get('budget', {}).get('allocation', {}).get('activities', {}).get('amount')
         preferences = trip_details.get('preferences', {}).get('activities')
 
-        if not all([destination, start_date_obj, end_date_obj]):
+        if not all([destination, start_date, end_date]):
             raise ValueError("Destination or dates are missing from trip details.")
 
-        start_date = start_date_obj.strftime('%Y-%m-%d') if start_date_obj else datetime.now().strftime('%Y-%m-%d')
-        end_date = end_date_obj.strftime('%Y-%m-%d') if end_date_obj else datetime.now().strftime('%Y-%m-%d')
-        num_days = (end_date_obj - start_date_obj).days + 1
+        start_date_obj = parse_date(start_date) if start_date else None
+        end_date_obj = parse_date(end_date) if end_date else None
+            
+        # Calculate duration in days
+        if start_date_obj and end_date_obj:
+            num_days = (end_date_obj - start_date_obj).days
+        else:
+            num_days = 5 
 
         prompt = f"""
         Generate a day-wise itinerary of activities in {destination} for a {num_days}-day trip from {start_date} to {end_date}.

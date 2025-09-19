@@ -1,7 +1,5 @@
 import os
 import json
-import firebase_admin
-from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 from datetime import datetime
 import google.generativeai as genai
@@ -24,25 +22,6 @@ def configure_gemini():
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in environment variables.")
     genai.configure(api_key=api_key)
-
-def initialize_firebase():
-    """Initializes the Firebase Admin SDK using service account key."""
-    # Check if the app is already initialized to prevent errors
-    if not firebase_admin._apps:
-        # Path to your service account key file
-        cred_path = os.path.join(os.path.dirname(__file__), '../firebase/serviceAccountKey.json')
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
-
-def get_trip_details(uid):
-    """Fetches trip details (origin, destination, date) from Firestore."""
-    db = firestore.client()
-    doc_ref = db.collection('trips').document(uid)
-    doc = doc_ref.get()
-    if doc.exists:
-        return doc.to_dict()
-    else:
-        raise Exception(f'No trip found for user ID: {uid}')
 
 def generate_gemini_prompt(origin, destination, start_date, end_date):
     """
@@ -90,27 +69,20 @@ Instructions:
     return prompt
 
 @mcp.tool()
-def get_primary_transport_options( uid: str = "shiny123") -> dict:
+def get_primary_transport_options( trip_details: dict) -> dict:
     """
     Main function to generate a mock long-distance transport ticket.
     Fetches data, calls Gemini, and returns the structured JSON response.
     """
     try:
         # Initialize services
-        initialize_firebase()
         configure_gemini()
-
-        trip_details = get_trip_details(uid)
 
         origin = trip_details.get('origin')
         destination = trip_details.get('destination')
-        start_date_obj = trip_details.get('startDate')
-        end_date_obj = trip_details.get('endDate')
-
-        start_date = start_date_obj.strftime('%Y-%m-%d') if start_date_obj else datetime.now().strftime('%Y-%m-%d')
-        end_date = end_date_obj.strftime('%Y-%m-%d') if end_date_obj else datetime.now().strftime('%Y-%m-%d')
-
-
+        start_date = trip_details.get('startDate')
+        end_date = trip_details.get('endDate')
+      
         if not all([origin, destination, start_date, end_date]):
             raise ValueError("origin, destination, or travel date is missing from trip details.")
 
