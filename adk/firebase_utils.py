@@ -3,10 +3,10 @@ from firebase_admin import credentials, firestore
 import logging
 import os
 
-# Configure logging to see potential errors or info messages.
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# 🔐 Initialize Firebase if not already initialized
+# Initialize Firebase Admin SDK
 if not firebase_admin._apps:
     cred_path = os.getenv("FIREBASE_SERVICE_ACCOUNT")
     if cred_path:
@@ -16,19 +16,19 @@ if not firebase_admin._apps:
         logging.error("FIREBASE_SERVICE_ACCOUNT env variable not set.")
         raise RuntimeError("Missing Firebase credentials")
 
-# ✅ Now it's safe to create the Firestore client
+# Create Firestore client
 db = firestore.client()
 
 def get_trip_context(uid: str) -> dict | None:
+    """Retrieves trip details for a given user ID from Firestore."""
     try:
         doc_ref = db.collection('trips').document(uid)
         doc = doc_ref.get()
-
         if doc.exists:
             return doc.to_dict()
         else:
-            logging.info(f"No trip document found for uid: {uid}")
+            logging.warning(f"No trip document found for uid: {uid}")
             return None
     except Exception as e:
-        logging.error(f"An error occurred while fetching trip context for uid {uid}: {e}")
+        logging.error(f"Error fetching trip context for uid {uid}: {e}")
         return None

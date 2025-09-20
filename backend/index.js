@@ -1,12 +1,12 @@
 import express from 'express';
-import weatherRouter from './routes/weather.js';
-import hotelRouter from './routes/hotel.js';
-import translatorRouter from './routes/translator.js';
-import packingListRouter from './routes/packing-list.js';
-import activitiesRouter from './routes/activities.js';
-import transportRouter from './routes/transport.js';
-import budgetRouter from './routes/budget.js';
-import cultureRouter from './routes/culture.js';
+import weatherRouter from './mcps/weather.js';
+import hotelRouter from './mcps/hotel.js';
+import translatorRouter from './mcps/translator.js';
+import packingListRouter from './mcps/packing-list.js';
+import activitiesRouter from './mcps/activities.js';
+import transportRouter from './mcps/transport.js';
+import budgetRouter from './mcps/budget.js';
+import cultureRouter from './mcps/culture.js';
 
 
 const app = express();

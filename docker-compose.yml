@@ -1,0 +1,162 @@
+version: "3.8"
+
+services:
+  activities:
+    build:
+      context: .
+      dockerfile: backend/mcps/activities/Dockerfile
+    ports:
+      - "3001:3001"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  budget:
+    build: ./backend/mcps/budget
+    ports:
+      - "3002:3002"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  culture:
+    build: ./backend/mcps/culture
+    ports:
+      - "3003:3003"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  food:
+    build:
+      context: .
+      dockerfile: backend/mcps/food/Dockerfile
+    ports:
+      - "3004:3004"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  geocode:
+    build: ./backend/mcps/geocode
+    ports:
+      - "3005:3005"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  hotel:
+    build:
+      context: .
+      dockerfile: backend/mcps/hotel/Dockerfile
+    ports:
+      - "3006:3006"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  local_transport:
+    build:
+      context: .
+      dockerfile: backend/mcps/local_transport/Dockerfile
+    ports:
+      - "3007:3007"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  packing_list:
+    build: ./backend/mcps/packing_list
+    ports:
+      - "3008:3008"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  primary_transport:
+    build:
+      context: .
+      dockerfile: backend/mcps/primary_transport/Dockerfile
+    ports:
+      - "3009:3009"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  translator:
+    build: ./backend/mcps/translator
+    ports:
+      - "3010:3010"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  weather:
+    build:
+      context: .
+      dockerfile: backend/mcps/weather/Dockerfile
+    ports:
+      - "3011:3011"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  snipsmart:
+    build: ./snipSmart
+    ports:
+      - "5000:5000"
+    networks:
+      - driftaway-net
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
+  adk:
+    build: ./adk
+    ports:
+      - "4000:4000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
+      - SNIP_SMART_URL=${SNIP_SMART_URL}
+    volumes:
+      - ./firebase/serviceAccountKey.json:/app/firebase/serviceAccountKey.json
+    networks:
+      - driftaway-net
+networks:
+  driftaway-net:
+    driver: bridge

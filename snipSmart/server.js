@@ -4,7 +4,7 @@ import snipSmart from "./snipSmart.js";
 import snipJson from "./snipJson.js";
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // Enable CORS for all routes
 app.use(cors());
@@ -71,7 +71,8 @@ app.post("/snip-json", (req, res) => {
   try {
     const result = snipJson(text);
 
-    if (result.data === null) {
+    if (!result.data) {
+      console.log("snipSmart result:", result);
       return res.status(400).json({
         error: "snipJson returned null data.",
         result,
