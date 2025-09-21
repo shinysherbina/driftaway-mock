@@ -1,0 +1,21 @@
+services:
+  # 1. The Frontend: A Static Site
+  - type: static_site
+    name: driftaway-frontend
+    env: node
+    rootDir: ./frontend
+    buildCommand: npm install && npm run build
+    publishDir: ./dist
+    # Redirect all API requests to the backend
+    routes:
+      - type: rewrite
+        source: /api/:path
+        destination: https://driftaway-backend.onrender.com/api/:path
+
+  # 2. The Backend: A Python Web Service
+  - type: web
+    name: driftaway-backend
+    env: python
+    rootDir: ./backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
