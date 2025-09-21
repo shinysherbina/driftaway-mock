@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/hotels/", tags=["Hotels"])
+@router.post("/", tags=["Hotels"])
 async def get_hotel_suggestions(uid: str = Query(..., description="User ID to fetch trip details")):
     """
     Provides hotel suggestions based on user's trip details.

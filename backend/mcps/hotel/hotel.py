@@ -90,7 +90,7 @@ def fetch_hotels(trip_details: dict) -> Dict[str, Any]:
 
         try:
             logger.info("Sending hotel data to Gemini for enrichment.")
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(prompt)
             raw_text = response.text.strip()
             logger.info("Successfully received response from Gemini API.")

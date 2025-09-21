@@ -32,3 +32,28 @@ def get_trip_context(uid: str) -> dict | None:
     except Exception as e:
         logging.error(f"Error fetching trip context for uid {uid}: {e}")
         return None
+
+def get_field_data(uid: str, field: str) -> dict | None:
+    """Retrieve field data for a given trip ID from Firestore."""
+    try:
+        doc_ref = db.collection('trips').document(uid)
+        doc = doc_ref.get()
+        if doc.exists:
+            trip_data = doc.to_dict()
+            logging.info(f"Fetched {field} data for trip {uid}: {trip_data}")    
+            return trip_data.get(field)
+        else:
+            logging.warning(f"No trip document found for uid: {uid}")
+            return None
+    except Exception as e:
+        logging.error(f"Error fetching field data for uid {uid}: {e}")
+        return None
+
+def update_field_data(uid: str, field: str, data: dict):
+    """Update field data for a given trip ID in Firestore."""
+    try:
+        doc_ref = db.collection('trips').document(uid)
+        doc_ref.update({field: data})
+        logging.info(f"Successfully updated {field} for trip {uid}")
+    except Exception as e:
+        logging.error(f"Error updating {field} for trip {uid}: {e}")

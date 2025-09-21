@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/local-transport/", tags=["Transport"])
+@router.post("/", tags=["Transport"])
 async def get_local_transport(uid: str = Query(..., description="User ID to fetch trip details")):
     """
     Provides local transport options based on user's trip details.

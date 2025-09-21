@@ -24,7 +24,7 @@ def configure_gemini():
 
 def get_local_transport_from_gemini(destination, start_date, duration_days):
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         prompt = f'''
         Generate a list of dedicated cab rental options for a trip to {destination}, starting on {start_date} and lasting {duration_days} days. 
         The user may prefer either a self-drive or chauffeur-driven vehicle—include both options if available. 

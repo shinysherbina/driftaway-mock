@@ -1,3 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script&family=Montserrat&family=Poppins&display=swap");
+
+/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Optional: set default fonts */
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0; /* reset default margin */
+  padding: 0; /* reset default padding */
+}
+
+h1 {
+  font-family: "Dancing Script", cursive;
+  color: whitesmoke; /* optional default color for headings */
+}

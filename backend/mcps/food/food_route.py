@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/food/", tags=["Food"])
+@router.post("/", tags=["Food"])
 async def get_food_suggestions(uid: str = Query(..., description="User ID to fetch trip details")):
     """
     Provides food suggestions based on user's trip details.

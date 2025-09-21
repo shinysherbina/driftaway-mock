@@ -1,7 +1,9 @@
 import os
-import google.generativeai as genai
-from dotenv import load_dotenv
 import logging
+import json
+from dotenv import load_dotenv
+import google.generativeai as genai
+from firebase_utils import get_trip_context
 
 # Load environment variables
 load_dotenv()
@@ -15,88 +17,74 @@ if not api_key:
     raise ValueError("GEMINI_API_KEY not found in environment variables.")
 genai.configure(api_key=api_key)
 
-def enrich_trip_plan(raw_mcp_data: dict, trip_details: dict) -> dict:
-    """
-    Enriches the raw MCP data using a Google ADK agent.
+# Define the fields we care about
+VALID_FIELDS = ["weather", "hotel", "food", "activities", "primaryTransport", "budget", "localTransport"]
 
-    Args:
-        raw_mcp_data: A dictionary containing the raw responses from all MCPs.
-        trip_details: The user's trip details.
+def _sanitize_for_json(data):
+    def convert(obj):
+        if isinstance(obj, dict):
+            return {k: convert(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert(v) for v in obj]
+        elif hasattr(obj, 'isoformat'):
+            return obj.isoformat()
+        else:
+            return obj
+    return convert(data)
 
-    Returns:
-        A dictionary containing the enriched trip plan.
+def chat(uid: str, destination: str, message: str, session_history: list) -> dict:
     """
-    logger.info("Starting trip plan enrichment with ADK agent.")
+    Generates a calm, friendly response to the user's message.
+    Nudges them toward filling in missing preferences.
+    """
+    trip_context = get_trip_context(uid)
+    if not trip_context:
+        return {
+            "session_history": session_history + [
+                {
+                    "role": "assistant",
+                    "content": "Hmm, I couldn't find your trip details. Could you try again?"
+                }
+            ]
+        }
+
+
+    prompt = f"""
+    You're a warm, friendly travel assistant helping someone plan a trip to {destination}.
+    They've just sent you a message, and you want to respond in a relaxed, conversational tone.
+
+    Use their trip context to understand what they've already shared, and gently guide them toward filling in anything that's still missing—like hotel preferences, food choices, activities, transport, or budget.
+
+    Don't overwhelm them with questions. Instead, respond like a thoughtful companion who’s genuinely curious and excited to help.
+
+    User message: "{message}"
+
+    Trip context:
+    {json.dumps(_sanitize_for_json(trip_context), indent=2)}
+
+    Respond with a single friendly paragraph. Avoid lists, markdown, or structured formatting—just natural language.
+
+    """
 
     try:
-        # Construct a prompt for the ADK agent
-        prompt = f"""
-        You are a travel planning assistant. Based on the following raw data from various travel services and the user's trip details, create a comprehensive and engaging travel plan.
-
-        User's Trip Details:
-        {trip_details}
-
-        Raw Data from Travel Services:
-        {raw_mcp_data}
-
-        Your task is to:
-        1.  Create a day-by-day itinerary that combines the activities, food, and transport options.
-        2.  Provide a summary of the trip, including the overall budget and weather forecast.
-        3.  Offer tips and recommendations based on the user's preferences.
-        4.  Ensure the final output is a single, valid JSON object.
-
-        The response must be a single, valid JSON object with the following structure. Do not include any explanatory text or markdown formatting.
-
-        Schema:
-        {{
-          "enriched_plan": {{
-            "summary": "<A brief, engaging summary of the trip>",
-            "daily_itinerary": [
-              {{
-                "day": <Day number>,
-                "date": "<Date>",
-                "theme": "<A theme for the day, e.g., 'Cultural Exploration'>",
-                "activities": [
-                  {{
-                    "name": "<Activity name>",
-                    "time": "<Suggested time>",
-                    "details": "<Brief details>"
-                  }}
-                ],
-                "dining_suggestions": [
-                  {{
-                    "name": "<Restaurant name>",
-                    "meal": "<e.g., Lunch, Dinner>",
-                    "details": "<Brief details>"
-                  }}
-                ]
-              }}
-            ],
-            "budget_overview": {{
-              "total_estimated_cost": <Total cost>,
-              "breakdown": [
-                {{
-                  "category": "<e.g., Hotels, Food>",
-                  "cost": <Cost>
-                }}
-              ]
-            }},
-            "weather_forecast": "<A summary of the weather forecast>",
-            "travel_tips": [
-              "<A useful travel tip>"
-            ]
-          }}
-        }}
-        """
-
-        # Call the Gemini API to enrich the data
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(prompt)
-        enriched_data = response.text.strip()
+        return {
+            "session_history": session_history + [
+            { "role": "user", "content": message },
+            { "role": "assistant", "content": response.text.strip() }
+            ]
+        }
 
-        logger.info("Successfully enriched trip plan with ADK agent.")
-        return {"enriched_plan": enriched_data}
 
     except Exception as e:
-        logger.error(f"An error occurred during trip plan enrichment: {e}")
-        return {"error": "Failed to enrich trip plan.", "details": str(e)}
+        logger.error(f"Gemini chat generation failed: {e}")
+        return {
+            "session_history": session_history + [
+                { "role": "user", "content": message },
+                {
+                    "role": "assistant",
+                    "content": "Oops, something went wrong while generating a reply. Let's try again in a moment."
+                }
+            ]
+        }

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/weather/", tags=["Weather"])
+@router.post("/", tags=["Weather"])
 async def get_weather(uid: str = Query(..., description="User ID to fetch trip details")):
     """
     Provides weather forecast based on user's trip details.

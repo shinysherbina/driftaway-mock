@@ -85,7 +85,7 @@ def fetch_activity_itinerary(trip_details: dict) -> Dict[str, Any]:
 
         try:
             logger.info("Sending activity itinerary request to Gemini.")
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(prompt)
             raw_text = response.text.strip()
             logger.info(f"Gemini raw response: {raw_text}")

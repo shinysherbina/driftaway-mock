@@ -1,77 +1,158 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import MapEmbed from '../components/MapEmbed'; // Import the new MapEmbed component
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import MapEmbed from "../components/MapEmbed.jsx";
+import TripChat from "../components/TripChat.jsx";
+import {
+  ActivitiesRenderer,
+  BudgetRenderer,
+  FoodRenderer,
+  HotelRenderer,
+  TransportRenderer,
+  WeatherRenderer,
+} from "../components/mcp_renderers";
+
+const MCP_TABS = [
+  "Weather",
+  "Hotel",
+  "Food",
+  "Activities",
+  "Transport",
+  "Budget",
+];
 
 const TripInput = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const destination = location.state?.destination || 'Lonavala, India'; // Default for map if not passed
-  const [chatMessage, setChatMessage] = useState('');
+  const destination = location.state?.destination || "Lonavala, India";
+  const [activeTab, setActiveTab] = useState(MCP_TABS[0]);
+  const [mcpData, setMcpData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleGenerateItinerary = () => {
-    // In a real app, you'd send chat messages and destination to a backend
-    // For now, just navigate to the TripPlan page
-    navigate('/tripplan', { state: { destination, chatMessage } });
+  useEffect(() => {
+    const fetchMcpData = async () => {
+      setIsLoading(true);
+      setError(null);
+      setMcpData(null);
+
+      try {
+        const response = await fetch(
+          `http://localhost:4000/mcp/${activeTab.toLowerCase()}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ uid: "shiny123", destination }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${activeTab} data`);
+        }
+
+        const data = await response.json();
+        console.log(`Fetched ${activeTab} data:`, data);
+        setMcpData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMcpData();
+  }, [activeTab, destination]);
+
+  const renderMcpData = () => {
+    if (isLoading) {
+      return <p>Loading {activeTab} data...</p>;
+    }
+
+    if (error) {
+      return <p className="text-red-500">Error: {error}</p>;
+    }
+
+    if (!mcpData) {
+      return <p>No data available for {activeTab}.</p>;
+    }
+
+    switch (activeTab) {
+      case "Weather":
+        return <WeatherRenderer data={mcpData} />;
+      case "Hotel":
+        return <HotelRenderer data={mcpData} />;
+      case "Food":
+        return <FoodRenderer data={mcpData} />;
+      case "Activities":
+        return <ActivitiesRenderer data={mcpData} />;
+      case "Transport":
+        return <TransportRenderer data={mcpData} />;
+      case "Budget":
+        return <BudgetRenderer data={mcpData} />;
+      default:
+        return <p>Select a category to view details.</p>;
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-100">
-      {/* Left Panel: MCP Data (Placeholder) */}
-      <div className="w-full lg:w-1/4 bg-white p-4 shadow-md flex flex-col">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Trip Details for {destination}</h2>
-        <div className="flex flex-col gap-4 overflow-y-auto flex-grow">
-          <div className="p-4 bg-blue-50 rounded-lg shadow-sm">
-            <h3 className="font-semibold text-lg text-blue-700">Weather</h3>
-            <p className="text-gray-600">Sunny, 28°C. Pack light clothes!</p>
+    <div className="h-screen w-screen relative bg-[url('/assets/Plan.jpg')] bg-cover bg-center bg-no-repeat flex flex-row items-center justify-start">
+      <div
+        className="flex flex-row h-2/3 m-8"
+        style={{
+          backgroundColor: "whitesmoke",
+          margin: "2rem",
+          padding: "2rem",
+          borderRadius: "2rem",
+        }}
+      >
+        <div className="w-full lg:w-1/4 bg-white p-4 shadow-md flex flex-col">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">
+            Trip Details for {destination}
+          </h2>
+          {/* Horizontally scrollable tabs */}
+          <div className="sticky flex border-b mb-4">
+            {MCP_TABS.map((tab) => (
+              <button
+                key={tab}
+                className={`py-2 px-4 whitespace-nowrap ${
+                  activeTab === tab
+                    ? "border-b-2 border-blue-500 text-blue-600"
+                    : "text-gray-500"
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
-          <div className="p-4 bg-green-50 rounded-lg shadow-sm">
-            <h3 className="font-semibold text-lg text-green-700">Hotel</h3>
-            <p className="text-gray-600">Luxury resort with mountain views. Check-in 3 PM.</p>
-          </div>
-          <div className="p-4 bg-yellow-50 rounded-lg shadow-sm">
-            <h3 className="font-semibold text-lg text-yellow-700">Food</h3>
-            <p className="text-gray-600">Local cuisine tour. Don't miss the Vada Pav!</p>
-          </div>
-          <div className="p-4 bg-red-50 rounded-lg shadow-sm">
-            <h3 className="font-semibold text-lg text-red-700">Activities</h3>
-            <p className="text-gray-600">Trekking to Tiger's Point, exploring Karla Caves.</p>
-          </div>
-          <div className="p-4 bg-purple-50 rounded-lg shadow-sm">
-            <h3 className="font-semibold text-lg text-purple-700">Transport</h3>
-            <p className="text-gray-600">Local taxis and auto-rickshaws recommended.</p>
-          </div>
-          <div className="p-4 bg-indigo-50 rounded-lg shadow-sm">
-            <h3 className="font-semibold text-lg text-indigo-700">Budget</h3>
-            <p className="text-gray-600">Estimated daily spend: ₹3000-5000.</p>
+          {/* Vertically scrollable content area */}
+          <div className="flex flex-col gap-4 overflow-y-auto flex-grow">
+            <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
+              <h3 className="font-semibold text-lg text-gray-700">
+                {activeTab}
+              </h3>
+              {renderMcpData()}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Middle Section: Google Map */}
-      <div className="w-full lg:w-1/2 p-4 flex items-center justify-center">
-        <MapEmbed destination={destination} />
-      </div>
-
-      {/* Right Panel: Chatbox Interface */}
-      <div className="w-full lg:w-1/4 bg-white p-4 shadow-md flex flex-col">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Chat with Driftaway AI</h2>
-        <div className="flex-grow border border-gray-300 rounded-lg p-4 mb-4 overflow-y-auto bg-gray-50">
-          {/* Placeholder for chat messages */}
-          <div className="mb-2 text-gray-700"><span className="font-semibold">AI:</span> Hello! How can I help you plan your trip to {destination}?</div>
-          <div className="mb-2 text-right text-blue-700"><span className="font-semibold">You:</span> Tell me more about local attractions.</div>
+        <div className="w-full lg:w-1/2 p-4 flex items-center justify-center">
+          <MapEmbed destination={destination} />
         </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Type your message..."
-            className="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={chatMessage}
-            onChange={(e) => setChatMessage(e.target.value)}
-            aria-label="Chat message input"
-          />
+
+        <div className="w-full flex flex-col lg:w-1/4 p-4">
+          <TripChat destination={destination} />
           <button
-            onClick={handleGenerateItinerary}
-            className="bg-green-600 text-white py-3 px-6 rounded-md hover:bg-green-700 transition duration-300 ease-in-out font-bold"
+            type="submit"
+            className="text-white py-3 rounded-xl hover:brightness-90 transition duration-300 ease-in-out text-lg font-bold"
+            style={{
+              backgroundColor: "#2bc8bd",
+              color: "white",
+              borderRadius: "1rem",
+              border: "none",
+              fontSize: "1.5rem",
+              padding: "0.5rem 1.5rem",
+            }}
           >
             Generate Itinerary
           </button>
