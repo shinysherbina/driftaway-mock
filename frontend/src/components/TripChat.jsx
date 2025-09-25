@@ -17,7 +17,7 @@ const TripChat = ({ destination }) => {
   useEffect(() => {
     const sendInitialMessage = async () => {
       try {
-        await fetch("http://localhost:4000/chat", {
+await fetch("/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -40,7 +40,7 @@ const TripChat = ({ destination }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/chat", {
+      const response = await fetch("/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

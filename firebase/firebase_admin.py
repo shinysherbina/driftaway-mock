@@ -1,34 +1,22 @@
-import firebase_admin
-from firebase_admin import credentials, firestore
 import logging
-import os
 
-# Configure logging to see potential errors or info messages.
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# 🔐 Initialize Firebase if not already initialized
-if not firebase_admin._apps:
-    cred_path = os.getenv("FIREBASE_SERVICE_ACCOUNT")
-    if cred_path:
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
-    else:
-        logging.error("FIREBASE_SERVICE_ACCOUNT env variable not set.")
-        raise RuntimeError("Missing Firebase credentials")
-
-# ✅ Now it's safe to create the Firestore client
-db = firestore.client()
-
 def get_trip_context(uid: str) -> dict | None:
-    try:
-        doc_ref = db.collection('trips').document(uid)
-        doc = doc_ref.get()
+    """
+    Returns a mock trip context for the given UID.
+    In a real application, this would fetch data from a database.
+    """
+    logging.info(f"Fetching mock trip context for uid: {uid}")
 
-        if doc.exists:
-            return doc.to_dict()
-        else:
-            logging.info(f"No trip document found for uid: {uid}")
-            return None
-    except Exception as e:
-        logging.error(f"An error occurred while fetching trip context for uid {uid}: {e}")
-        return None
+    # Mock trip data
+    mock_trip = {
+        "destination": "Paris, France",
+        "startDate": "2025-10-15",
+        "endDate": "2025-10-22",
+        "tripStyle": ["sightseeing", "foodie", "romantic"],
+        "travelers": ["couple"],
+    }
+
+    return mock_trip

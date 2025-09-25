@@ -36,7 +36,7 @@ const TripInput = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:4000/mcp/${activeTab.toLowerCase()}`,
+          `/api/${activeTab.toLowerCase()}`,
           {
             method: "POST",
             headers: {

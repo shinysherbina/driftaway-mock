@@ -119,23 +119,23 @@ async def mock_chat_endpoint(request: ChatRequest) -> Dict[str, Any]:
     """
     return mock_chat_response
 
-@app.post("/mcp/hotel")
+@app.post("/api/hotel")
 async def mock_hotel_mcp(uid: str = Body(..., embed=True)):
     return mock_hotel_data
 
-@app.post("/mcp/food")
+@app.post("/api/food")
 async def mock_food_mcp(uid: str = Body(..., embed=True)):
     return mock_food_data
 
-@app.post("/mcp/activities")
+@app.post("/api/activities")
 async def mock_activities_mcp(uid: str = Body(..., embed=True)):
     return mock_activities_data
 
-@app.post("/mcp/transport")
+@app.post("/api/transport")
 async def mock_transport_mcp(uid: str = Body(..., embed=True)):
     return mock_transport_data
 
-@app.post("/mcp/budget")
+@app.post("/api/budget")
 async def mock_budget_mcp(uid: str = Body(..., embed=True)):
     return mock_budget_data
 

@@ -132,16 +132,7 @@ services:
       - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
       - SNIP_SMART_URL=${SNIP_SMART_URL}
 
-  snipsmart:
-    build: ./snipSmart
-    ports:
-      - "5000:5000"
-    networks:
-      - driftaway-net
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
-      - SNIP_SMART_URL=${SNIP_SMART_URL}
+
 
   adk:
     build: ./adk
