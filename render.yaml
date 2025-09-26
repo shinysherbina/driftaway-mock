@@ -1,10 +1,13 @@
 services:
   - type: web
     name: driftaway-mock
-    env: node
+    env: python
     buildCommand: |
       npm install --prefix frontend
       npm run build --prefix frontend
-      npm install --prefix backend
-    startCommand: "npm start --prefix backend"
+      rm -rf backend/static_build
+      mkdir backend/static_build
+      cp -r frontend/dist/* backend/static_build/
+      pip install -r backend/requirements.txt
+    startCommand: "gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:80 backend.main:app"
     healthCheckPath: /
