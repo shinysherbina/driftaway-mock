@@ -12,7 +12,7 @@ class TripRequest(BaseModel):
     uid: str
     destination: str
 
-@router.post("/", tags=["Transport"])
+@router.post("")
 async def get_local_transport(data: TripRequest):
     """
     Provides mock local transport options.

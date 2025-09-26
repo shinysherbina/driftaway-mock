@@ -12,7 +12,7 @@ class TripRequest(BaseModel):
     uid: str
     destination: str
 
-@router.post("/", tags=["Weather"])
+@router.post("")
 async def get_weather(data: TripRequest):
     """
     Provides mock weather forecast.

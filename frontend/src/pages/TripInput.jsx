@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import MapEmbed from "../components/MapEmbed.jsx";
 import TripChat from "../components/TripChat.jsx";
 import {
@@ -27,6 +27,7 @@ const TripInput = () => {
   const [mcpData, setMcpData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMcpData = async () => {
@@ -62,6 +63,34 @@ const TripInput = () => {
 
     fetchMcpData();
   }, [activeTab, destination]);
+
+  const handleGenerateItinerary = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/itinerary?uid=shiny123`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to generate itinerary");
+      }
+
+      const itineraryData = await response.json();
+      console.log("Generated Itinerary:", itineraryData);
+      navigate("/trip-plan", { state: { itinerary: itineraryData, destination } });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderMcpData = () => {
     if (isLoading) {
@@ -143,7 +172,8 @@ const TripInput = () => {
         <div className="w-full flex flex-col lg:w-1/4 p-4">
           <TripChat destination={destination} />
           <button
-            type="submit"
+            type="button"
+            onClick={handleGenerateItinerary}
             className="text-white py-3 rounded-xl hover:brightness-90 transition duration-300 ease-in-out text-lg font-bold"
             style={{
               backgroundColor: "#2bc8bd",

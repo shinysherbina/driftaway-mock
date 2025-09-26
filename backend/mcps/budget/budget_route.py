@@ -12,7 +12,7 @@ class TripRequest(BaseModel):
     uid: str
     destination: str
 
-@router.post("/", tags=["Budget"])
+@router.post("")
 async def get_budget_suggestions(data: TripRequest):
     """
     Provides mock budget suggestions.

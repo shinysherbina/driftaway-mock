@@ -11,15 +11,102 @@ router = APIRouter()
 # TODO: Implement the itinerary orchestrator that calls other MCPs to generate a full itinerary.
 def generate_full_itinerary(trip_details: dict):
     """
-    Placeholder function for the itinerary orchestrator.
+    Generates a mock comprehensive itinerary.
     """
-    logger.warning("Itinerary orchestrator is not implemented yet. Returning mock data.")
-    return {
-        "message": "Itinerary generation is not yet implemented. This is a placeholder response.",
-        "trip_details": trip_details
-    }
+    destination = trip_details.get("destination", "Paris")
+    user_location = trip_details.get("user_location", "London") # Assuming user_location is available in trip_details
 
-@router.get("/itinerary/", tags=["Itinerary"])
+    mock_itinerary_data = {
+        "primary_transport": {
+            "outbound": {
+                "type": "Flight",
+                "details": f"Flight from {user_location} to {destination}",
+                "price": 150,
+                "booking_url": "https://www.mockdata.com/flights/outbound"
+            },
+            "inbound": {
+                "type": "Flight",
+                "details": f"Flight from {destination} to {user_location}",
+                "price": 120,
+                "booking_url": "https://www.mockdata.com/flights/inbound"
+            }
+        },
+        "local_transport": {
+            "provider": "Zoomcar",
+            "details": f"Self-drive car rental from Zoomcar for 3 days in {destination}.",
+            "price": 90,
+            "booking_url": "https://www.mockdata.com/zoomcar"
+        },
+        "daily_activities": [
+            {
+                "day": "Day 1",
+                "date": "2025-09-26",
+                "activities": [
+                    {
+                        "name": "Eiffel Tower Visit",
+                        "type": "Landmark",
+                        "time": "10:00 AM",
+                        "description": "Ascend the iconic Eiffel Tower for panoramic views of Paris.",
+                        "imageUrl": "https://www.mockdata.com/eiffel-tower.jpg"
+                    },
+                    {
+                        "name": "Louvre Museum Tour",
+                        "type": "Museum",
+                        "time": "02:00 PM",
+                        "description": "Explore world-renowned art collections, including the Mona Lisa.",
+                        "imageUrl": "https://www.mockdata.com/louvre-museum.jpg"
+                    }
+                ]
+            },
+            {
+                "day": "Day 2",
+                "date": "2025-09-27",
+                "activities": [
+                    {
+                        "name": "Notre Dame Cathedral",
+                        "type": "Cathedral",
+                        "time": "09:30 AM",
+                        "description": "Admire the Gothic architecture of Notre Dame.",
+                        "imageUrl": "https://www.mockdata.com/notre-dame.jpg"
+                    },
+                    {
+                        "name": "Seine River Cruise",
+                        "type": "Tour",
+                        "time": "04:00 PM",
+                        "description": "Enjoy a relaxing boat trip along the Seine River.",
+                        "imageUrl": "https://www.mockdata.com/seine-cruise.jpg"
+                    }
+                ]
+            }
+        ],
+        "cafes_to_try": [
+            {
+                "name": "Cafe Amore",
+                "cuisine": "Italian",
+                "rating": 4.7,
+                "location": "Riverside",
+                "reason": "Romantic ambiance with delicious pasta.",
+                "url": "https://www.mockdata.com/maps/search/Cafe+Amore"
+            },
+            {
+                "name": "The Daily Grind",
+                "cuisine": "Continental",
+                "rating": 4.2,
+                "location": "City Center",
+                "reason": "Great for a quick coffee and light bites.",
+                "url": "https://www.mockdata.com/maps/search/The+Daily+Grind"
+            }
+        ],
+        "weather_forecast": [
+            {"date": "2025-09-26", "summary": "Sunny", "temperature": "22°C"},
+            {"date": "2025-09-27", "summary": "Partly Cloudy", "temperature": "20°C"},
+            {"date": "2025-09-28", "summary": "Light Rain", "temperature": "18°C"}
+        ]
+    }
+    logger.info(f"Generated mock itinerary for {destination}.")
+    return mock_itinerary_data
+
+@router.get("")
 async def get_full_itinerary(uid: str = Query(..., description="User ID to fetch trip details")):
     """
     Provides a full itinerary by orchestrating other services.

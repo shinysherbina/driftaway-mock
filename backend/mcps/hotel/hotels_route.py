@@ -12,7 +12,7 @@ class TripRequest(BaseModel):
     uid: str
     destination: str
 
-@router.post("/", tags=["Hotels"])
+@router.post("")
 async def get_hotel_suggestions(data: TripRequest):
     """
     Provides mock hotel suggestions.
